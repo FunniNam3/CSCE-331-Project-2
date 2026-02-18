@@ -1,3 +1,4 @@
+
 foodVaraieties = [
     {"item": "BBQ pork", "price": 9.99},
     {"item": "Teriyaki chicken", "price": 9.99},
