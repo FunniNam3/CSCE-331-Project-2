@@ -27,3 +27,6 @@ LEFT JOIN food_to_receipt ftr ON r.id = ftr.receipt_id
 LEFT JOIN food f ON ftr.food_id = f.id
 GROUP BY hour_of_day
 ORDER BY hour_of_day;
+
+/* Query 4 */
+SELECT * FROM menu_usage_summary;
