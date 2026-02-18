@@ -30,7 +30,7 @@ def random_cashier_id():
 
 def random_timestamp():
     now = datetime.now()
-    past = now - timedelta(days=60)
+    past = now - timedelta(days=600)
 
     random_seconds = random.randint(0, int((now - past).total_seconds()))
     return past + timedelta(seconds=random_seconds)
@@ -70,7 +70,7 @@ with open(RECEIPT_FILE, "w", newline="") as r_file, \
     drink_writer.writerow(["receipt_id", "drink_id", "ice", "sweetness", "milk", "boba", "popping_boba"])
     food_writer.writerow(["food_id", "receipt_id", "modifiers"])
 
-    for receipt_id in range(1, NUM_RECEIPTS + 1):
+    for receipt_id in range(1601, NUM_RECEIPTS + 1601):
 
         # ===== Receipt =====
         customer_id = weighted_customer_id()
