@@ -1,4 +1,5 @@
 import random
+from datetime import datetime, timedelta
 
 inventory_with_suppliers = [
     {"item": "Black tea leaves", "supplier": "Jade Leaf Tea Wholesalers", "contact": "orders@jadeleaftea.com", "supplier_price": 45.00},
@@ -45,8 +46,10 @@ inventory_with_suppliers = [
 
 with open("purchaces.csv", "w") as file:
     itemLen = len(inventory_with_suppliers) - 1
-    file.write("item_id, item_name, buy_date, supplier_name, supplier_contact, amount, supplier_price,\n")
-    for x in range(random.randint(100,300)):
+    file.write("id, item_id, buy_date, supplier_name, supplier_contact, amount, supplier_price\n")
+    for (key, x) in enumerate(range(random.randint(100,300))):
+        random_days = random.randint(0, 365*5)
+        date_str = (datetime.now() - timedelta(days=random_days)).strftime("%Y-%m-%d")
         itemID = random.randint(0,itemLen)
-        item = f"{itemID}, {inventory_with_suppliers[itemID]["item"]}, {str(random.randint(1,12)) + "-" + str(random.randint(1,31)) + "-" + str(random.randint(2012, 2026))}, {inventory_with_suppliers[itemID]["supplier"]}, {inventory_with_suppliers[itemID]["contact"]}, {random.randint(10,100)}, {inventory_with_suppliers[itemID]["supplier_price"]},\n"
+        item = f"{key}, {itemID}, {date_str}, {inventory_with_suppliers[itemID]["supplier"]}, {inventory_with_suppliers[itemID]["contact"]}, {random.randint(10,100)}, {inventory_with_suppliers[itemID]["supplier_price"]}\n"
         file.write(item)
