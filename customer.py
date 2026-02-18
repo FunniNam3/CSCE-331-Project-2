@@ -1,6 +1,7 @@
 import random
 
 customers = [
+    {'name': 'Anonymous User', 'phone': '000-000-0000', 'points': 0},
     {'name': 'Chloe Gonzalez', 'phone': '210-653-4071', 'points': 143}, 
     {'name': 'Chloe Peterson', 'phone': '210-395-8472', 'points': 136}, 
     {'name': 'Scarlett Scott', 'phone': '210-462-5937', 'points': 73}, 
@@ -39,8 +40,7 @@ customers = [
     {'name': 'Ella Ortiz', 'phone': '210-207-7420', 'points': 80}, 
     {'name': 'Jacob Smith', 'phone': '210-304-4968', 'points': 62}, 
     {'name': 'Carter Jones', 'phone': '210-370-7862', 'points': 66}, 
-    {'name': 'Amelia Bailey', 'phone': '210-780-4529', 'points': 8}, 
-    {'name': 'Victoria Taylor', 'phone': '210-842-4040', 'points': 16}
+    {'name': 'Amelia Bailey', 'phone': '210-780-4529', 'points': 8}
     ]
 
 
@@ -49,3 +49,4 @@ with open("customers.csv", "w") as file:
     for (id, item) in enumerate(customers):
         itemString = f"{id}, {item['name']}, {item['phone']}, {item['points']}\n"
         file.write(itemString)
+
