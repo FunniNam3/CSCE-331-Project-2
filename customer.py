@@ -44,9 +44,10 @@ customers = [
     ]
 
 
-with open("customers.csv", "w") as file:
+with open("customers.csv", "w") as file:  #create and writie out to csv file
     file.write("id, name, phone, points\n")
     for (id, item) in enumerate(customers):
-        itemString = f"{id}, {item['name']}, {item['phone']}, {item['points']}\n"
+        itemString = f"{id}, {item['name']}, {item['phone']}, {item['points']}\n"  #ad ids and put array into the csv
         file.write(itemString)
+
 
