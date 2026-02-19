@@ -100,6 +100,7 @@ for supplier_name, supplier_info in suppliers.items():
 
 ##########
 
+# printed out lised saved to simplify file tranfer
 inventory_with_suppliers = [
     {"item": "Black tea leaves", "supplier": "Jade Leaf Tea Wholesalers", "contact": "orders@jadeleaftea.com", "supplier_price": 45.00},
     {"item": "Green tea leaves", "supplier": "Jade Leaf Tea Wholesalers", "contact": "orders@jadeleaftea.com", "supplier_price": 42.50},
@@ -143,8 +144,8 @@ inventory_with_suppliers = [
     {"item": "French fries", "supplier": "Golden Pearl Beverage Supply", "contact": "555-210-8745", "supplier_price": 40.00}
 ]
 
-with open("inventory.csv", "w") as file:
+with open("inventory.csv", "w") as file: #created inventory file
     file.write("id, amount, name, supplier_name, supplier_contact")
     for (id, item) in enumerate(inventory_with_suppliers):
-        itemString = f"{id}, {random.randint(0, 20)}, {item["item"]}, {item["supplier"]}, {item["contact"]}\n"
+        itemString = f"{id}, {random.randint(0, 20)}, {item["item"]}, {item["supplier"]}, {item["contact"]}\n"  # attributed from table
         file.write(itemString)
