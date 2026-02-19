@@ -23,14 +23,14 @@ drinkVarieties = {
     "14": {"name": "Chocolate Milk", "ice_level": "None","sweetness": "100", "milk": "Cow", "boba": "False", "popping_boba": "False", "price":7.50}
 }
 
-with open("drink.csv", "w") as file:
+with open("drink.csv", "w") as file:  # creating drink database
     file.write(header)
 
     for (id,drink) in drinkVarieties.items():
         idString = f"{id}, "
         file.write(idString)
 
-        for attribute in drink:
+        for attribute in drink: # customizing each drink option with attributes
             drinkString = f"{drink[attribute]}"
 
 
