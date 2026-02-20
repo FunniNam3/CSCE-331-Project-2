@@ -49,4 +49,3 @@ with open("data/customers.csv", "w") as file:
     for (id, item) in enumerate(customers):
         itemString = f"{id}, {item['name']}, {item['phone']}, {item['points']}\n"
         file.write(itemString)
-
