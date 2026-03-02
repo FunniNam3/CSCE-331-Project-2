@@ -57,29 +57,44 @@ public class TrendsPanel extends JPanel {
         ChartPanel piChart = SetUpPiChart();
         constraints.gridx = 0;
         constraints.gridy = 0;
-        constraints.gridheight = 20;
-        constraints.fill = GridBagConstraints.VERTICAL;
+        constraints.gridheight = 100;
+        constraints.gridwidth = 200;
+        constraints.weightx = 0.5;
+        constraints.weighty = 0.5;
+        constraints.fill = GridBagConstraints.BOTH;
         graphPanel.add(piChart, constraints);
 
         // Bar chart for showing monthly revenue
         ChartPanel barChart = SetUpBarChart();
-        constraints.gridx = 1;
+        constraints.gridx = 200;
         constraints.gridy = 0;
-        constraints.gridheight = 20;
+        constraints.gridheight = 100;
+        constraints.gridwidth = 200;
+        constraints.weightx = 0.5;
+        constraints.weighty = 0.5;
+        constraints.fill = GridBagConstraints.BOTH;
         graphPanel.add(barChart, constraints);
 
         // line chart to show monthly number of sales
         ChartPanel lineChart = SetUpLineChart();
         constraints.gridx = 0;
-        constraints.gridy = 1;
-        constraints.gridheight = 20;
+        constraints.gridy = 100;
+        constraints.gridheight = 100;
+        constraints.gridwidth = 200;
+        constraints.weightx = 0.5;
+        constraints.weighty = 0.5;
+        constraints.fill = GridBagConstraints.BOTH;
         graphPanel.add(lineChart, constraints);
 
         // Show busy time trends
         ChartPanel timeChart = SetUpTimeChart();
-        constraints.gridx = 1;
-        constraints.gridy = 1;
-        constraints.gridheight = 20;
+        constraints.gridx = 200;
+        constraints.gridy = 100;
+        constraints.gridheight = 100;
+        constraints.gridwidth = 200;
+        constraints.weightx = 0.5;
+        constraints.weighty = 0.5;
+        constraints.fill = GridBagConstraints.BOTH;
         graphPanel.add(timeChart, constraints);
 
         add(graphPanel, BorderLayout.CENTER);
