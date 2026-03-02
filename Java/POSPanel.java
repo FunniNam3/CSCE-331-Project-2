@@ -33,6 +33,9 @@ public class POSPanel extends JPanel {
 
     private Integer cashierId = null;
     private String cashierName = null;
+    private String paymentMethod = null;
+    private static final double TAX_RATE = 0.0825; // 8.25%
+private double taxAmount = 0.0;
 
     public POSPanel(GUI gui) {
         this.gui = gui;
@@ -314,7 +317,7 @@ public class POSPanel extends JPanel {
         updateTotalLabel();
     }
 
-    private void insertReceiptRow() {
+    private void insertReceiptRow(double finalTotal) {
         ensureConnection();
         if (conn == null) {
             JOptionPane.showMessageDialog(this, "No DB connection.");
@@ -343,12 +346,14 @@ public class POSPanel extends JPanel {
             }
 
             String insertSql
-                    = "INSERT INTO receipt (purchase_date, customer_id, cashier_id) "
+                    = "INSERT INTO receipt (purchase_date, customer_id, cashier_id, tax, payment_method, discount_id) "
                     + "VALUES (CURRENT_DATE, ?, ?)";
 
             try (PreparedStatement ps = conn.prepareStatement(insertSql)) {
                 ps.setInt(1, customerId);
                 ps.setInt(2, cashierIdToUse);
+                ps.setString(3, paymentMethod);
+                ps.setDouble(4, taxAmount);   // store tax only not total
                 ps.executeUpdate();
             }
 
@@ -435,14 +440,64 @@ public class POSPanel extends JPanel {
             return;
         }
 
-        JOptionPane.showMessageDialog(this,
-                "Tap card now.\nTotal: " + totalLabel.getText());
+        // Calculate tax
+        taxAmount = total * TAX_RATE;
+        double finalTotal = total + taxAmount;
 
-        insertReceiptRow(); //inser into sql
+        String method = promptForPaymentMethod();
+        if (method == null) {
+            return; // user cancelled / closed / invalid
+        }
+
+        this.paymentMethod = method;
+
+        JOptionPane.showMessageDialog(this,
+            "Subtotal: $" + String.format("%.2f", total) +
+            "\nTax (8.25%): $" + String.format("%.2f", taxAmount) +
+            "\nTotal: $" + String.format("%.2f", finalTotal) +
+            "\n\nPayment method: " + method
+        );
+
+        insertReceiptRow(finalTotal); //inser into sql
         // Clear cart after payment
         cartModel.setRowCount(0);
         total = 0.0;
+        taxAmount = 0.0;
+        this.paymentMethod = null;
         updateTotalLabel();
+    }
+
+    private String promptForPaymentMethod() {
+        String[] options = {"Cash", "Card", "Other", "Cancel"};
+
+        int choice = JOptionPane.showOptionDialog(
+                this,
+                "Select a payment method:",
+                "Payment Method",
+                JOptionPane.DEFAULT_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                options,
+                options[1] // default = Card
+        );
+
+        if (choice == 3 || choice == JOptionPane.CLOSED_OPTION) { // Cancel or X
+            return null;
+        }
+
+        if (choice == 2) { // Other
+            String typed = JOptionPane.showInputDialog(this, "Enter payment method:");
+            if (typed == null) return null; // user canceled
+            typed = typed.trim();
+            if (typed.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Payment method cannot be empty.");
+                return null;
+            }
+            return typed;
+        }
+
+        // Cash or Card
+        return options[choice];
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////
