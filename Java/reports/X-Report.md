@@ -1,20 +1,21 @@
 # X-Report
 
-### Total Sales: 56
+### Total Sales: 86
 
-### Total Transactions: 4
+### Total Transactions: 9
 
 ### Total Food Sales: 3.5
 
-### Total Food Items: 1
+### Total Food Items: 2
 
-### Total Drink Sales: 52.5
+### Total Drink Sales: 82.5
 
-### Total Drink Items: 7
+### Total Drink Items: 11
 
 # Payment Summary
 | Payment Method | Total Transactions | Total Sales |
 |---|---|---|
-| Card | 2 | 18.5 |
-| Cash | 1 | 0 |
-| Check | 1 | 37.5 |
+| Card | 3 | 18.5 |
+| Cash | 3 | 15 |
+| Check | 2 | 45 |
+| Void | 1 | 7.5 |
