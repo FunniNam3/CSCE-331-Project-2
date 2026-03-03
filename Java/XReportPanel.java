@@ -79,29 +79,28 @@ public class XReportPanel extends JPanel {
         // try-with-resources ensures the writer is closed automatically
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
             writer.write("# X-Report");
-            writer.newLine();
-            writer.write("## Sales");
 
             ResultSet sales = getSales();
             try {
                 while (sales.next()) {
                     writer.newLine();
-                    writer.write("Total Transactions: " + sales.getString("total_transactions"));
+                    writer.newLine();
+                    writer.write("### Total Sales: " + sales.getString("total_sales"));
                     writer.newLine();
                     writer.newLine();
-                    writer.write("Total Food Sales: " + sales.getString("total_food_sales"));
+                    writer.write("### Total Transactions: " + sales.getString("total_transactions"));
                     writer.newLine();
                     writer.newLine();
-                    writer.write("Total Food Items: " + sales.getString("total_food_items"));
+                    writer.write("### Total Food Sales: " + sales.getString("total_food_sales"));
                     writer.newLine();
                     writer.newLine();
-                    writer.write("Total Drink Sales: " + sales.getString("total_drink_sales"));
+                    writer.write("### Total Food Items: " + sales.getString("total_food_items"));
                     writer.newLine();
                     writer.newLine();
-                    writer.write("Total Drink Items: " + sales.getString("total_drink_items"));
+                    writer.write("### Total Drink Sales: " + sales.getString("total_drink_sales"));
                     writer.newLine();
                     writer.newLine();
-                    writer.write("Total Sales: " + sales.getString("total_sales"));
+                    writer.write("### Total Drink Items: " + sales.getString("total_drink_items"));
                 }
             } catch (SQLException e) {
                 writer.newLine();
@@ -111,19 +110,20 @@ public class XReportPanel extends JPanel {
             ResultSet paymentSummary = getPaymentSummary();
             try {
                 writer.newLine();
-                writer.write("## Payment Summary");
+                writer.newLine();
+                writer.write("# Payment Summary");
                 writer.newLine();
                 writer.write("| Payment Method | Total Transactions | Total Sales |");
                 writer.newLine();
                 writer.write("|---|---|---|");
-                while (sales.next()) {
+                while (paymentSummary.next()) {
                     writer.newLine();
                     writer.write(
                             String.format(
                                     "| %s | %s | %s |",
-                                    sales.getString("payment_method"),
-                                    sales.getString("total_transactions"),
-                                    sales.getString("total_sales")
+                                    paymentSummary.getString("payment_method"),
+                                    paymentSummary.getString("total_transactions"),
+                                    paymentSummary.getString("total_sales")
                             )
                     );
                 }
