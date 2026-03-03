@@ -461,25 +461,40 @@ public class TrendsPanel extends JPanel {
         // get oldest receipt and newest receipt dates
         ResultSet allTimeSet = GetAllTime();
         boolean oldestDate = true;
-        Component graphComponents[] = graphPanel.getComponents();
-        String startDate = "";
-        String endDate = "";
+        String startMonth = "";
+        String startDay = "";
+        String startYear = "";
+        String endMonth = "";
+        String endDay = "";
+        String endYear = "";
         
         try {
             while (allTimeSet != null && allTimeSet.next()) {
                 if (oldestDate) {
-                    startDate = allTimeSet.getString("date");
+                    startMonth = allTimeSet.getString("month");
+                    startDay = allTimeSet.getString("day");
+                    startYear = allTimeSet.getString("year");
                     oldestDate = false;
                 }
                 else {
-                    endDate = allTimeSet.getString("date");
+                    endMonth = allTimeSet.getString("month");
+                    endDay = allTimeSet.getString("day");
+                    endYear = allTimeSet.getString("year");
                 }
             }
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, e.getMessage());
         }
 
-        redrawGraphs(graphPanel, startDate, endDate);
+        redrawGraphs(
+            graphPanel, 
+            startMonth, 
+            startDay, 
+            startYear, 
+            endMonth, 
+            endDay, 
+            endYear
+        );
     }
 
     private static DefaultPieDataset LoadOrderData(ResultSet orderCount) {
