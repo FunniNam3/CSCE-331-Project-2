@@ -1,6 +1,7 @@
 
 import java.awt.*;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -9,13 +10,33 @@ import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.List;
 import javax.swing.*;
 
 public class XReportPanel extends JPanel {
 
     // ==========================================================
-    private GUI gui;
+    private final GUI gui;
     private static Connection conn;
+
+    private static class SalesData {
+
+        double grossSales;
+        double netSales;
+        int totalTransactions;
+        double totalFoodSales;
+        int totalFoodItems;
+        double totalDrinkSales;
+        int totalDrinkItems;
+    }
+
+    private static class PaymentSummaryData {
+
+        String paymentMethod;
+        int totalTransactions;
+        double grossSales;
+        double netSales;
+    }
 
     public XReportPanel(GUI gui) {
         this.gui = gui;
@@ -29,7 +50,7 @@ public class XReportPanel extends JPanel {
             generateReport();
         });
 
-        add(generateReportButton);
+        add(generateReportButton, BorderLayout.CENTER);
     }
 
     // ===================== TOP BAR =====================
@@ -76,181 +97,214 @@ public class XReportPanel extends JPanel {
     private void generateReport() {
         String fileName = "reports/X-Report.md";
 
+        File dir = new File("reports");
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+
         // try-with-resources ensures the writer is closed automatically
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
             writer.write("# X-Report");
 
-            ResultSet sales = getSales();
-            try {
-                while (sales.next()) {
-                    writer.newLine();
-                    writer.newLine();
-                    writer.write("### Total Sales: " + sales.getString("total_sales"));
-                    writer.newLine();
-                    writer.newLine();
-                    writer.write("### Total Transactions: " + sales.getString("total_transactions"));
-                    writer.newLine();
-                    writer.newLine();
-                    writer.write("### Total Food Sales: " + sales.getString("total_food_sales"));
-                    writer.newLine();
-                    writer.newLine();
-                    writer.write("### Total Food Items: " + sales.getString("total_food_items"));
-                    writer.newLine();
-                    writer.newLine();
-                    writer.write("### Total Drink Sales: " + sales.getString("total_drink_sales"));
-                    writer.newLine();
-                    writer.newLine();
-                    writer.write("### Total Drink Items: " + sales.getString("total_drink_items"));
-                }
-            } catch (SQLException e) {
+            writer.newLine();
+            writer.newLine();
+
+            LocalDateTime now = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+            writer.write("Generated: " + now.format(formatter));
+            writer.newLine();
+            writer.newLine();
+            writer.write("Business Date: " + now.toLocalDate());
+            writer.newLine();
+
+            SalesData sales = getSalesData();
+
+            writer.newLine();
+            writer.newLine();
+            writer.write("### Gross Sales: " + String.format("%.2f", sales.grossSales));
+            writer.newLine();
+            writer.write("### Net Sales (Excluding Voids): " + String.format("%.2f", sales.netSales));
+            writer.newLine();
+            writer.write("### Total Transactions: " + sales.totalTransactions);
+            writer.newLine();
+
+            double avgTicket = sales.totalTransactions == 0
+                    ? 0
+                    : sales.netSales / sales.totalTransactions;
+
+            writer.write("### Average Ticket: " + String.format("%.2f", avgTicket));
+            writer.newLine();
+            writer.newLine();
+
+            double totalSales = sales.grossSales;
+
+            double foodPercent = totalSales == 0
+                    ? 0
+                    : (sales.totalFoodSales / totalSales) * 100;
+
+            double drinkPercent = totalSales == 0
+                    ? 0
+                    : (sales.totalDrinkSales / totalSales) * 100;
+
+            writer.newLine();
+            writer.write("### Food Sales: "
+                    + String.format("%.2f", sales.totalFoodSales)
+                    + " (" + String.format("%.2f", foodPercent) + "%)");
+            writer.newLine();
+
+            writer.write("### Drink Sales: "
+                    + String.format("%.2f", sales.totalDrinkSales)
+                    + " (" + String.format("%.2f", drinkPercent) + "%)");
+            writer.newLine();
+
+            List<PaymentSummaryData> payments = getPaymentSummaryData();
+
+            writer.newLine();
+            writer.newLine();
+            writer.write("# Payment Summary");
+            writer.newLine();
+            writer.write("| Payment Method | Transactions | % of Txns | Gross Sales | % of Sales |");
+            writer.newLine();
+            writer.write("|---|---|---|---|---|");
+
+            for (PaymentSummaryData p : payments) {
+
+                double percentOfSales = sales.grossSales == 0
+                        ? 0
+                        : (p.grossSales / sales.grossSales) * 100;
+
+                double percentOfTransactions = sales.totalTransactions == 0
+                        ? 0
+                        : ((double) p.totalTransactions / sales.totalTransactions) * 100;
+
                 writer.newLine();
-                writer.write("Error" + e.getMessage());
+                writer.write(String.format(
+                        "| %s | %d | %.2f%% | %.2f | %.2f%% |",
+                        p.paymentMethod,
+                        p.totalTransactions,
+                        percentOfTransactions,
+                        p.grossSales,
+                        percentOfSales
+                ));
             }
 
-            ResultSet paymentSummary = getPaymentSummary();
-            try {
-                writer.newLine();
-                writer.newLine();
-                writer.write("# Payment Summary");
-                writer.newLine();
-                writer.write("| Payment Method | Total Transactions | Total Sales |");
-                writer.newLine();
-                writer.write("|---|---|---|");
-                while (paymentSummary.next()) {
-                    writer.newLine();
-                    writer.write(
-                            String.format(
-                                    "| %s | %s | %s |",
-                                    paymentSummary.getString("payment_method"),
-                                    paymentSummary.getString("total_transactions"),
-                                    paymentSummary.getString("total_sales")
-                            )
-                    );
-                }
-            } catch (SQLException e) {
-                writer.newLine();
-                writer.write("Error" + e.getMessage());
-            }
-
-            System.out.println("Successfully wrote to the file: " + fileName);
+            JOptionPane.showMessageDialog(this,
+                    "X-Report Generated Successfully!",
+                    "Success",
+                    JOptionPane.INFORMATION_MESSAGE);
         } catch (IOException e) {
             System.err.println("An error occurred: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 
-    private ResultSet getSales() {
-        String salesQuery = """
-SELECT
-    -- Total transactions today
-    (SELECT COUNT(*) 
-     FROM receipt
-     WHERE purchase_date::date >= CURRENT_DATE) AS total_transactions,
+    private SalesData getSalesData() {
 
-    -- Food totals
-    (SELECT COALESCE(SUM(f.price),0)
-     FROM receipt r
-     JOIN food_to_receipt ftr ON r.id = ftr.receipt_id
-     JOIN food f ON ftr.food_id = f.id
-     WHERE r.purchase_date::date >= CURRENT_DATE) AS total_food_sales,
-
-    (SELECT COUNT(*)
-     FROM receipt r
-     JOIN food_to_receipt ftr ON r.id = ftr.receipt_id
-     WHERE r.purchase_date::date >= CURRENT_DATE) AS total_food_items,
-
-    -- Drink totals
-    (SELECT COALESCE(SUM(d.price),0)
-     FROM receipt r
-     JOIN drink_to_receipt dtr ON r.id = dtr.receipt_id
-     JOIN drink d ON dtr.drink_id = d.id
-     WHERE r.purchase_date::date >= CURRENT_DATE) AS total_drink_sales,
-
-    (SELECT COUNT(*)
-     FROM receipt r
-     JOIN drink_to_receipt dtr ON r.id = dtr.receipt_id
-     WHERE r.purchase_date::date >= CURRENT_DATE) AS total_drink_items,
-
-    -- Total combined sales
-    (
-        (SELECT COALESCE(SUM(f.price),0)
-         FROM receipt r
-         JOIN food_to_receipt ftr ON r.id = ftr.receipt_id
-         JOIN food f ON ftr.food_id = f.id
-         WHERE r.purchase_date::date >= CURRENT_DATE)
-
-        +
-
-        (SELECT COALESCE(SUM(d.price),0)
-         FROM receipt r
-         JOIN drink_to_receipt dtr ON r.id = dtr.receipt_id
-         JOIN drink d ON dtr.drink_id = d.id
-         WHERE r.purchase_date::date >= CURRENT_DATE)
-    ) AS total_sales;
-""";
-        try {
-
-            LocalDateTime myDateObj = LocalDateTime.now();
-            DateTimeFormatter myFormatObj = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            String formattedDate = myDateObj.format(myFormatObj);
-
-            PreparedStatement stmt = conn.prepareStatement(salesQuery);
-
-            return stmt.executeQuery();
-
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, e.getMessage());
-        }
-
-        return null;
-    }
-
-    private ResultSet getPaymentSummary() {
         String query = """
-WITH receipt_totals AS (
-    SELECT 
-        r.id,
-        r.payment_method,
-        r.purchase_date,
+        WITH receipt_totals AS (
+            SELECT 
+                r.id,
+                r.payment_method,
 
-        COALESCE(
-            (SELECT SUM(f.price)
-             FROM food_to_receipt ftr
-             JOIN food f ON ftr.food_id = f.id
-             WHERE ftr.receipt_id = r.id), 0
+                COALESCE(SUM(f.price), 0) AS food_total,
+                COUNT(f.id) AS food_items,
+
+                COALESCE(SUM(d.price), 0) AS drink_total,
+                COUNT(d.id) AS drink_items
+
+            FROM receipt r
+            LEFT JOIN food_to_receipt ftr ON r.id = ftr.receipt_id
+            LEFT JOIN food f ON ftr.food_id = f.id
+            LEFT JOIN drink_to_receipt dtr ON r.id = dtr.receipt_id
+            LEFT JOIN drink d ON dtr.drink_id = d.id
+            WHERE r.purchase_date::date = CURRENT_DATE
+            GROUP BY r.id, r.payment_method
         )
 
-        +
+        SELECT
+            COUNT(*) AS total_transactions,
+            SUM(food_total + drink_total) AS gross_sales,
+            SUM(CASE WHEN payment_method != 'Void'
+                     THEN food_total + drink_total
+                     ELSE 0 END) AS net_sales,
+            SUM(food_total) AS total_food_sales,
+            SUM(food_items) AS total_food_items,
+            SUM(drink_total) AS total_drink_sales,
+            SUM(drink_items) AS total_drink_items
+        FROM receipt_totals;
+    """;
 
-        COALESCE(
-            (SELECT SUM(d.price)
-             FROM drink_to_receipt dtr
-             JOIN drink d ON dtr.drink_id = d.id
-             WHERE dtr.receipt_id = r.id), 0
-        ) AS receipt_total
+        SalesData data = new SalesData();
 
-    FROM receipt r
-    WHERE r.purchase_date::date = CURRENT_DATE
-)
+        try (PreparedStatement stmt = conn.prepareStatement(query); ResultSet rs = stmt.executeQuery()) {
 
-SELECT 
-    payment_method,
-    COUNT(*) AS total_transactions,
-    SUM(receipt_total) AS total_sales
-FROM receipt_totals
-GROUP BY payment_method;
-        """;
-
-        try {
-            PreparedStatement stmt = conn.prepareStatement(query);
-
-            return stmt.executeQuery();
+            if (rs.next()) {
+                data.totalTransactions = rs.getInt("total_transactions");
+                data.grossSales = rs.getDouble("gross_sales");
+                data.netSales = rs.getDouble("net_sales");
+                data.totalFoodSales = rs.getDouble("total_food_sales");
+                data.totalFoodItems = rs.getInt("total_food_items");
+                data.totalDrinkSales = rs.getDouble("total_drink_sales");
+                data.totalDrinkItems = rs.getInt("total_drink_items");
+            }
 
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this, e.getMessage());
         }
 
-        return null;
+        return data;
+    }
 
+    private List<PaymentSummaryData> getPaymentSummaryData() {
+
+        String query = """
+        WITH receipt_totals AS (
+            SELECT 
+                r.id,
+                r.payment_method,
+
+                COALESCE(SUM(f.price), 0) +
+                COALESCE(SUM(d.price), 0) AS receipt_total
+
+            FROM receipt r
+            LEFT JOIN food_to_receipt ftr ON r.id = ftr.receipt_id
+            LEFT JOIN food f ON ftr.food_id = f.id
+            LEFT JOIN drink_to_receipt dtr ON r.id = dtr.receipt_id
+            LEFT JOIN drink d ON dtr.drink_id = d.id
+            WHERE r.purchase_date::date = CURRENT_DATE
+            GROUP BY r.id, r.payment_method
+        )
+
+        SELECT
+            payment_method,
+            COUNT(*) AS total_transactions,
+            SUM(receipt_total) AS gross_sales,
+            SUM(CASE WHEN payment_method != 'Void'
+                     THEN receipt_total
+                     ELSE 0 END) AS net_sales
+        FROM receipt_totals
+        GROUP BY payment_method
+        ORDER BY gross_sales DESC;
+    """;
+
+        List<PaymentSummaryData> results = new ArrayList<>();
+
+        try (PreparedStatement stmt = conn.prepareStatement(query); ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                PaymentSummaryData data = new PaymentSummaryData();
+                data.paymentMethod = rs.getString("payment_method");
+                data.totalTransactions = rs.getInt("total_transactions");
+                data.grossSales = rs.getDouble("gross_sales");
+                data.netSales = rs.getDouble("net_sales");
+
+                results.add(data);
+            }
+
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, e.getMessage());
+        }
+
+        return results;
     }
 }
