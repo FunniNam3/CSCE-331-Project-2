@@ -1,5 +1,7 @@
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.io.FileInputStream;
@@ -12,6 +14,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -119,6 +122,16 @@ public class TrendsPanel extends JPanel {
         graphPanel.add(timeChart, constraints);
 
         add(graphPanel, BorderLayout.CENTER);
+
+
+        // create bottom bar to display current graph time frame
+        JPanel bottomBar = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        String timeString = "January 21, 2025 - March 21, 2025";
+        JLabel timeFrame = new JLabel(timeString);
+        timeFrame.setBorder(BorderFactory.createLineBorder(Color.blue, 2));
+        timeFrame.setFont(new Font(timeFrame.getName(), Font.BOLD, 16));
+        bottomBar.add(timeFrame);
+        add(bottomBar, BorderLayout.SOUTH);
     }
 
 
