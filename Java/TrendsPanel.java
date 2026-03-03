@@ -13,8 +13,10 @@ import java.sql.Statement;
 import java.util.Properties;
 
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -45,7 +47,26 @@ public class TrendsPanel extends JPanel {
         JButton backButton = new JButton("Menu");
         backButton.addActionListener(e -> gui.showScreen("MAIN"));
         topBar.add(backButton);
+
+        // Create field to enter time frame of interest
+        // This information will be fed into the graphs
+        JTextField fromDateField = new JTextField(8);
+        JTextField toDateField = new JTextField(8);
+        topBar.add(new JLabel("From (YYYY-MM-DD):"));
+        topBar.add(fromDateField);
+        topBar.add(new JLabel("To:"));
+        topBar.add(toDateField);
+
+        // add refresh button to refresh graphs to corresponding time frame
+        JButton refreshButton = new JButton("Refresh");
+        topBar.add(refreshButton);
+
+        // add to frame!
         add(topBar, BorderLayout.NORTH);
+
+        // make year timeframe button
+        // String years[] = LoadYears();
+        // JComboBox yearSelect = new JComboBox<>(years);
 
 
         // add four different graphs //
@@ -99,6 +120,7 @@ public class TrendsPanel extends JPanel {
 
         add(graphPanel, BorderLayout.CENTER);
     }
+
 
 
 
@@ -377,7 +399,37 @@ public class TrendsPanel extends JPanel {
         return null;
     }
 
+    // private static ResultSet GetYears() {
+    //     // finds avg number of receipts for each hour
+    //     try {
+    //         GetConnection();
 
+    //         //create a statement object
+    //         Statement stmt = conn.createStatement();
+
+    //         //create a SQL statement
+    //         String sqlStatement = """
+    //             SELECT AVG(orders) AS avg_receipts, hour
+    //             FROM (
+    //                 SELECT COUNT(id) AS orders, 
+    //                 DATE_PART('hour', purchase_date) AS hour, 
+    //                 DATE_PART('month', purchase_date) AS month, 
+    //                 DATE_PART('day', purchase_date) AS day
+    //                 FROM receipt
+    //                 GROUP BY hour, day, month
+    //             )
+    //             GROUP BY hour
+    //             ORDER BY hour ASC;
+    //         """;
+            
+    //         //send statement to DBMS
+    //         return stmt.executeQuery(sqlStatement);
+
+    //     } catch (SQLException e) {
+    //         JOptionPane.showMessageDialog(null, e.getMessage());
+    //     }
+    //     return null;
+    // }
 
     private static DefaultPieDataset LoadOrderData(ResultSet orderCount) {
 
@@ -447,4 +499,11 @@ public class TrendsPanel extends JPanel {
         // return!
         return timeDataset;
     }
+
+    // private static String[] LoadYears(ResultSet years) {
+    //     // get string array of years from database
+        
+
+
+    // }
 }
