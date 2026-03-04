@@ -280,6 +280,10 @@ public class TrendsPanel extends JPanel {
 
 
     private static ResultSet GetDrinksAndFoodCount(String[] startDate, String[] endDate) {
+        // convert start and end dates into YYYY-MM-DD format for sql query
+        String startString = startDate[2] + "-" + startDate[0] + "-" + startDate[1];
+        String endString = endDate[2] + "-" + endDate[0] + "-" + endDate[1];
+
         try {
             GetConnection();
 
@@ -372,9 +376,9 @@ public class TrendsPanel extends JPanel {
                         + "DATE_PART('month', receipt.purchase_date) AS month, "
                         + "DATE_PART('day', receipt.purchase_date) AS day, "
                         + "DATE_PART('year', receipt.purchase_date) AS year "
-                    + "FROM ((food"
-                        + "INNER JOIN food_to_receipt ON food.id = food_to_receipt.food_id)"
-                        + "INNER JOIN receipt ON receipt.id = food_to_receipt.receipt_id)"
+                    + "FROM ((food "
+                        + "INNER JOIN food_to_receipt ON food.id = food_to_receipt.food_id) "
+                        + "INNER JOIN receipt ON receipt.id = food_to_receipt.receipt_id) "
                     + "WHERE ( "
                             + "(DATE_PART('month', receipt.purchase_date) BETWEEN " + startDate[0] + " AND " + endDate[0] + ") "
                         + "AND "
@@ -507,6 +511,7 @@ public class TrendsPanel extends JPanel {
                         + "AND "
                             + "(DATE_PART('year', purchase_date) BETWEEN " + startDate[2] + " AND " + endDate[2] + ") "
                     + ") "
+                    + "GROUP BY hour, day, month, year"
                 + ") "
                 + "GROUP BY hour "
                 + "ORDER BY hour ASC";
