@@ -186,6 +186,7 @@ public class TrendsPanel extends JPanel {
         // This function replaces the graphs with the data contained in the 
         // specified time frame
         graphPanel.removeAll();
+        graphPanel.revalidate();
 
         // add four different graphs //
         graphPanel.setLayout(new GridBagLayout());
@@ -235,13 +236,12 @@ public class TrendsPanel extends JPanel {
         constraints.fill = GridBagConstraints.BOTH;
         graphPanel.add(timeChart, constraints);
 
-        
-        graphPanel.revalidate();
         graphPanel.repaint();
     }
 
     private static void RedrawTimeFrame(JPanel bottomBar, String[] startDate, String[] endDate, Boolean allTime) {
         bottomBar.removeAll();
+        bottomBar.revalidate();
 
         // create bottom bar to display current graph time frame
         String timeString = startDate[0] + "/" + startDate[1] + "/" + startDate[2] + " - " + endDate[0] + "/" + endDate[1] + "/" + endDate[2];
@@ -254,6 +254,8 @@ public class TrendsPanel extends JPanel {
         timeFrame.setBorder(BorderFactory.createLineBorder(Color.blue, 2));
         timeFrame.setFont(new Font(timeFrame.getName(), Font.BOLD, 16));
         bottomBar.add(timeFrame);
+
+        bottomBar.repaint();
     }
 
     private static void GetConnection() {
@@ -303,13 +305,7 @@ public class TrendsPanel extends JPanel {
                     + "FROM drink "
                     + "INNER JOIN drink_to_receipt ON drink.id = drink_to_receipt.drink_id "
                     + "INNER JOIN receipt ON receipt.id = drink_to_receipt.receipt_id "
-                    + "WHERE ( "
-                            + "(DATE_PART('month', receipt.purchase_date) BETWEEN " + startDate[0] + " AND " + endDate[0] + ") "
-                        + "AND "
-                            + "(DATE_PART('day', receipt.purchase_date) BETWEEN " + startDate[1] + " AND " + endDate[1] + ") "
-                        + "AND "
-                            + "(DATE_PART('year', receipt.purchase_date) BETWEEN " + startDate[2] + " AND " + endDate[2] + ") "
-                    + ") "
+                    + "WHERE receipt.purchase_date BETWEEN '" + startString + "' AND '" + endString + "' "
                 + ") "
                 + "GROUP BY name "
                 + "UNION "
@@ -324,13 +320,7 @@ public class TrendsPanel extends JPanel {
                     + "FROM food "
                     + "INNER JOIN food_to_receipt ON food.id = food_to_receipt.food_id "
                     + "INNER JOIN receipt ON receipt.id = food_to_receipt.receipt_id "
-                    + "WHERE ( "
-                            + "(DATE_PART('month', receipt.purchase_date) BETWEEN " + startDate[0] + " AND " + endDate[0] + ") "
-                        + "AND "
-                            + "(DATE_PART('day', receipt.purchase_date) BETWEEN " + startDate[1] + " AND " + endDate[1] + ") "
-                        + "AND "
-                            + "(DATE_PART('year', receipt.purchase_date) BETWEEN " + startDate[2] + " AND " + endDate[2] + ") "
-                    + ") "
+                    + "WHERE receipt.purchase_date BETWEEN '" + startString + "' AND '" + endString + "' "
                 + ") "
                 + "GROUP BY name";
                 
@@ -344,6 +334,10 @@ public class TrendsPanel extends JPanel {
     }
 
     private static ResultSet GetIncome(String[] startDate, String[] endDate) {
+        // convert start and end dates into YYYY-MM-DD format for sql query
+        String startString = startDate[2] + "-" + startDate[0] + "-" + startDate[1];
+        String endString = endDate[2] + "-" + endDate[0] + "-" + endDate[1];
+
         // finds total income from sales for each month
         try {
             GetConnection();
@@ -363,13 +357,7 @@ public class TrendsPanel extends JPanel {
                     + "FROM ((drink "
                         + "INNER JOIN drink_to_receipt ON drink.id = drink_to_receipt.drink_id) "
                         + "INNER JOIN receipt ON receipt.id = drink_to_receipt.receipt_id) "
-                    + "WHERE ( "
-                            + "(DATE_PART('month', receipt.purchase_date) BETWEEN " + startDate[0] + " AND " + endDate[0] + ") "
-                        + "AND "
-                            + "(DATE_PART('day', receipt.purchase_date) BETWEEN " + startDate[1] + " AND " + endDate[1] + ") "
-                        + "AND "
-                            + "(DATE_PART('year', receipt.purchase_date) BETWEEN " + startDate[2] + " AND " + endDate[2] + ") "
-                    + ") "
+                    + "WHERE receipt.purchase_date BETWEEN '" + startString + "' AND '" + endString + "' "
                     + "UNION ALL "
                     + "SELECT "
                         + "food.price AS sale, "
@@ -379,13 +367,7 @@ public class TrendsPanel extends JPanel {
                     + "FROM ((food "
                         + "INNER JOIN food_to_receipt ON food.id = food_to_receipt.food_id) "
                         + "INNER JOIN receipt ON receipt.id = food_to_receipt.receipt_id) "
-                    + "WHERE ( "
-                            + "(DATE_PART('month', receipt.purchase_date) BETWEEN " + startDate[0] + " AND " + endDate[0] + ") "
-                        + "AND "
-                            + "(DATE_PART('day', receipt.purchase_date) BETWEEN " + startDate[1] + " AND " + endDate[1] + ") "
-                        + "AND "
-                            + "(DATE_PART('year', receipt.purchase_date) BETWEEN " + startDate[2] + " AND " + endDate[2] + ") "
-                    + ") "
+                    + "WHERE receipt.purchase_date BETWEEN '" + startString + "' AND '" + endString + "' "
                 + ") "
                 + "GROUP BY year, month "
                 + "ORDER BY year, month ASC";
@@ -400,6 +382,10 @@ public class TrendsPanel extends JPanel {
     }
 
     private static ResultSet GetExpenses(String[] startDate, String[] endDate) {
+        // convert start and end dates into YYYY-MM-DD format for sql query
+        String startString = startDate[2] + "-" + startDate[0] + "-" + startDate[1];
+        String endString = endDate[2] + "-" + endDate[0] + "-" + endDate[1];
+
         // finds total expenses for each month
         try {
             GetConnection();
@@ -417,13 +403,7 @@ public class TrendsPanel extends JPanel {
                         + "DATE_PART('day', buy_date) AS day, "
                         + "DATE_PART('year', buy_date) AS year "
                     + "FROM purchase "
-                    + "WHERE ( "
-                            + "(DATE_PART('month', buy_date) BETWEEN " + startDate[0] + " AND " + endDate[0] + ") "
-                        + "AND "
-                            + "(DATE_PART('day', buy_date) BETWEEN " + startDate[1] + " AND " + endDate[1] + ") "
-                        + "AND "
-                            + "(DATE_PART('year', buy_date) BETWEEN " + startDate[2] + " AND " + endDate[2] + ") "
-                    + ") "
+                    + "WHERE purchase.buy_date BETWEEN '" + startString + "' AND '" + endString + "' "
                 + ") "
                 + "GROUP BY year, month "
                 + "ORDER BY year, month ASC";
@@ -438,6 +418,10 @@ public class TrendsPanel extends JPanel {
     }
 
     private static ResultSet GetReceipts(String[] startDate, String[] endDate) {
+        // convert start and end dates into YYYY-MM-DD format for sql query
+        String startString = startDate[2] + "-" + startDate[0] + "-" + startDate[1];
+        String endString = endDate[2] + "-" + endDate[0] + "-" + endDate[1];
+
         // finds total number of receipts for each month
         try {
             GetConnection();
@@ -455,13 +439,7 @@ public class TrendsPanel extends JPanel {
                         + "DATE_PART('day', purchase_date) AS day, "
                         + "DATE_PART('year', purchase_date) AS year "
                     + "FROM receipt "
-                    + "WHERE ( "
-                            + "(DATE_PART('month', purchase_date) BETWEEN " + startDate[0] + " AND " + endDate[0] + ") "
-                        + "AND "
-                            + "(DATE_PART('day', purchase_date) BETWEEN " + startDate[1] + " AND " + endDate[1] + ") "
-                        + "AND "
-                            + "(DATE_PART('year', purchase_date) BETWEEN " + startDate[2] + " AND " + endDate[2] + ") "
-                    + ") "
+                    + "WHERE receipt.purchase_date BETWEEN '" + startString + "' AND '" + endString + "' "
                 + ") "
                 + "GROUP BY year, month "
                 + "ORDER BY year, month ASC";
@@ -486,6 +464,10 @@ public class TrendsPanel extends JPanel {
     }
 
     private static ResultSet GetTimes(String[] startDate, String[] endDate) {
+        // convert start and end dates into YYYY-MM-DD format for sql query
+        String startString = startDate[2] + "-" + startDate[0] + "-" + startDate[1];
+        String endString = endDate[2] + "-" + endDate[0] + "-" + endDate[1];
+
         // finds avg number of receipts for each hour
         try {
             GetConnection();
@@ -500,18 +482,12 @@ public class TrendsPanel extends JPanel {
                     + "SELECT "
                         + "COUNT(id) AS orders, "
                         + "DATE_PART('hour', purchase_date) AS hour, "
-                        + "DATE_PART('day', purchase_date) AS day,"
+                        + "DATE_PART('day', purchase_date) AS day, "
                         + "DATE_PART('month', purchase_date) AS month, "
                         + "DATE_PART('year', purchase_date) AS year "
                     + "FROM receipt "
-                    + "WHERE ( "
-                            + "(DATE_PART('month', purchase_date) BETWEEN " + startDate[0] + " AND " + endDate[0] + ") "
-                        + "AND "
-                            + "(DATE_PART('day', purchase_date) BETWEEN " + startDate[1] + " AND " + endDate[1] + ") "
-                        + "AND "
-                            + "(DATE_PART('year', purchase_date) BETWEEN " + startDate[2] + " AND " + endDate[2] + ") "
-                    + ") "
-                    + "GROUP BY hour, day, month, year"
+                    + "WHERE receipt.purchase_date BETWEEN '" + startString + "' AND '" + endString + "' "
+                    + "GROUP BY hour, day, month, year "
                 + ") "
                 + "GROUP BY hour "
                 + "ORDER BY hour ASC";
