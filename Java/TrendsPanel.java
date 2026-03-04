@@ -615,11 +615,13 @@ public class TrendsPanel extends JPanel {
     private static DefaultCategoryDataset LoadBarData(ResultSet barData, String saleType) {
         // create dataset for bar graph
         DefaultCategoryDataset barDataset = new DefaultCategoryDataset();
+        String dateEntry;
 
         // while loop through result set and input values into dataset
         try {
             while (barData != null && barData.next()) {
-                barDataset.addValue(barData.getInt(1), saleType, barData.getString(2));
+                dateEntry = barData.getString(2) + "/" + barData.getString(3);
+                barDataset.addValue(barData.getInt(1), saleType, dateEntry);
             }
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, e.getMessage());
@@ -632,11 +634,13 @@ public class TrendsPanel extends JPanel {
     private static DefaultCategoryDataset LoadReceiptData(ResultSet receiptData) {
         // create dataset for line graph
         DefaultCategoryDataset lineDataset = new DefaultCategoryDataset();
+        String dateEntry;
 
         // while loop through result set and input values into dataset
         try {
             while (receiptData != null && receiptData.next()) {
-                lineDataset.addValue(receiptData.getInt("receipts"), "Receipts", receiptData.getString("month"));
+                dateEntry = receiptData.getString("month") + "/" + receiptData.getString("year");
+                lineDataset.addValue(receiptData.getInt("receipts"), "Receipts", dateEntry);
             }
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, e.getMessage());
