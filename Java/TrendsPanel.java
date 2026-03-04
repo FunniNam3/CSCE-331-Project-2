@@ -272,7 +272,7 @@ public class TrendsPanel extends JPanel {
     }
 
 
-    private static ResultSet GetDrinksAndFoodCount() {
+    private static ResultSet GetDrinksAndFoodCount(String[] startDate, String[] endDate) {
         try {
             GetConnection();
 
@@ -280,23 +280,49 @@ public class TrendsPanel extends JPanel {
             Statement stmt = conn.createStatement();
 
             //create a SQL statement
-            String sqlStatement = """
-                SELECT COUNT(drink_id) AS number_of_orders, name
-                FROM (
-                    SELECT drink_to_receipt.drink_id, drink.name
-                    FROM drink
-                    INNER JOIN drink_to_receipt ON drink.id = drink_to_receipt.drink_id
-                )
-                GROUP BY name
-                UNION
-                SELECT COUNT(food_id) AS number_of_orders, name
-                FROM (
-                    SELECT food_to_receipt.food_id, food.name
-                    FROM food
-                    INNER JOIN food_to_receipt ON food.id = food_to_receipt.food_id
-                )
-                GROUP BY name;
-            """;
+            String sqlStatement = 
+                " SELECT COUNT(drink_id) AS number_of_orders, name " 
+                + "FROM ( "
+                    + "SELECT "
+                        + "drink_to_receipt.drink_id, "
+                        + "drink.name, " 
+                        + "DATE_PART('month', receipt.purchase_date) AS month, "
+                        + "DATE_PART('day', receipt.purchase_date) AS day, "
+                        + "DATE_PART('year', receipt.purchase_date) AS year "
+                    + "FROM drink "
+                    + "INNER JOIN drink_to_receipt ON drink.id = drink_to_receipt.drink_id "
+                    + "INNER JOIN receipt ON receipt.id = drink_to_receipt.receipt_id "
+                    + "WHERE ( "
+                            + "(DATE_PART('month', receipt.purchase_date) BETWEEN " + startDate[0] + " AND " + endDate[0] + ") "
+                        + "AND "
+                            + "(DATE_PART('day', receipt.purchase_date) BETWEEN " + startDate[1] + " AND " + endDate[1] + ") "
+                        + "AND "
+                            + "(DATE_PART('year', receipt.purchase_date) BETWEEN " + startDate[2] + " AND " + endDate[2] + ") "
+                    + ") "
+                + ") "
+                + "GROUP BY name "
+                + "UNION "
+                + "SELECT COUNT(food_id) AS number_of_orders, name "
+                + "FROM ( "
+                    + "SELECT "
+                        + "food_to_receipt.food_id, "
+                        + "food.name, " 
+                        + "DATE_PART('month', receipt.purchase_date) AS month, "
+                        + "DATE_PART('day', receipt.purchase_date) AS day, "
+                        + "DATE_PART('year', receipt.purchase_date) AS year "
+                    + "FROM food "
+                    + "INNER JOIN food_to_receipt ON food.id = food_to_receipt.food_id "
+                    + "INNER JOIN receipt ON receipt.id = food_to_receipt.receipt_id "
+                    + "WHERE ( "
+                            + "(DATE_PART('month', receipt.purchase_date) BETWEEN " + startDate[0] + " AND " + endDate[0] + ") "
+                        + "AND "
+                            + "(DATE_PART('day', receipt.purchase_date) BETWEEN " + startDate[1] + " AND " + endDate[1] + ") "
+                        + "AND "
+                            + "(DATE_PART('year', receipt.purchase_date) BETWEEN " + startDate[2] + " AND " + endDate[2] + ") "
+                    + ") "
+                + ") "
+                + "GROUP BY name";
+                
             //send statement to DBMS
             return stmt.executeQuery(sqlStatement);
 
