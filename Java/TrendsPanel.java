@@ -342,7 +342,7 @@ public class TrendsPanel extends JPanel {
 
             //create a SQL statement
             String sqlStatement = 
-                "SELECT SUM(sale) AS income, month " 
+                "SELECT SUM(sale) AS income, month, year " 
                 + "FROM ( "
                     + "SELECT "
                         + "drink.price AS sale, "
@@ -376,8 +376,8 @@ public class TrendsPanel extends JPanel {
                             + "(DATE_PART('year', receipt.purchase_date) BETWEEN " + startDate[2] + " AND " + endDate[2] + ") "
                     + ") "
                 + ") "
-                + "GROUP BY month "
-                + "ORDER BY month ASC";
+                + "GROUP BY year, month "
+                + "ORDER BY year, month ASC";
             
             //send statement to DBMS
             return stmt.executeQuery(sqlStatement);
@@ -388,7 +388,7 @@ public class TrendsPanel extends JPanel {
         return null;
     }
 
-    private static ResultSet GetExpenses() {
+    private static ResultSet GetExpenses(String[] startDate, String[] endDate) {
         // finds total expenses for each month
         try {
             GetConnection();
@@ -397,15 +397,25 @@ public class TrendsPanel extends JPanel {
             Statement stmt = conn.createStatement();
 
             //create a SQL statement
-            String sqlStatement = """
-                SELECT SUM(expense) AS loss, month
-                FROM (
-                    SELECT supplier_price AS expense, DATE_PART('month', buy_date) AS month 
-                    FROM purchase
-                )
-                GROUP BY month
-                ORDER BY month ASC;
-            """;
+            String sqlStatement = 
+                "SELECT SUM(expense) AS loss, month, year " 
+                + "FROM ( "
+                    + "SELECT "
+                        + "supplier_price AS expense, "
+                        + "DATE_PART('month', buy_date) AS month, "
+                        + "DATE_PART('day', buy_date) AS day, "
+                        + "DATE_PART('year', buy_date) AS year "
+                    + "FROM purchase "
+                    + "WHERE ( "
+                            + "(DATE_PART('month', buy_date) BETWEEN " + startDate[0] + " AND " + endDate[0] + ") "
+                        + "AND "
+                            + "(DATE_PART('day', buy_date) BETWEEN " + startDate[1] + " AND " + endDate[1] + ") "
+                        + "AND "
+                            + "(DATE_PART('year', buy_date) BETWEEN " + startDate[2] + " AND " + endDate[2] + ") "
+                    + ") "
+                + ") "
+                + "GROUP BY year, month "
+                + "ORDER BY year, month ASC";
             
             //send statement to DBMS
             return stmt.executeQuery(sqlStatement);
